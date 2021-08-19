@@ -102,24 +102,32 @@ exports.addUser = addUser;
  * @return {Promise<[{}]>} A promise to the reservations.
  */
 const getAllReservations = function(guest_id, limit = 10) {
+  //Define query
+  const queryString = `
+    SELECT * 
+    FROM reservations
+    JOIN properties ON property_id = properties.id
+    WHERE guest_id = $1
+    LIMIT $2
+    `;
   //Return promise for query
   return pool
-    .query(`SELECT * FROM users WHERE id = $1`, [guest_id, limit])
+    .query(queryString, [guest_id, limit])
     .then((result) => {     
       //If result is not found inside DB, return null
       if (result.rows.length === 0) {
         return null
       };
       //If result is found, return results
+      console.log(result.rows)
       return result.rows
     })
+    //Console log error if can't connect to DB
     .catch((err) => {
       console.log(err.message)
     });
-
-
-  // return getAllProperties(null, 2);
 }
+
 exports.getAllReservations = getAllReservations;
 
 /// Properties
@@ -131,19 +139,19 @@ exports.getAllReservations = getAllReservations;
  * @return {Promise<[{}]>}  A promise to the properties.
  */
  const getAllProperties = (options, limit = 10) => {
+  //Return promise for query
   return pool
     .query(`SELECT * FROM properties LIMIT $1`, [limit])
+    //If result is found, return results
     .then((result) => {
-      // console.log(limit)
-      // console.log(result.rows);
       return result.rows;
     })
+    //Console log error if can't connect to DB
     .catch((err) => {
       console.log(err.message);
     });
 };
 exports.getAllProperties = getAllProperties;
-
 
 /**
  * Add a property to the database

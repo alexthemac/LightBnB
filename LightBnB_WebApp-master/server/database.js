@@ -25,19 +25,19 @@ const getUserWithEmail = function(email) {
   //Return promise for query
   return pool
     .query(`SELECT * FROM users WHERE email = $1`, [email])
-    .then((result) => {      
+    .then((result) => {
       //If result is not found inside DB, return null
       if (result.rows.length === 0) {
-        return null
-      };
+        return null;
+      }
       //If result is found, return the object for the user (not the array holding the object)
-      return result.rows[0]
+      return result.rows[0];
     })
     //Console log error if can't connect to DB
     .catch((err) => {
-      console.log(err.message)
+      console.log(err.message);
     });
-}
+};
 
 exports.getUserWithEmail = getUserWithEmail;
 
@@ -50,19 +50,19 @@ const getUserWithId = function(id) {
   //Return promise for query
   return pool
     .query(`SELECT * FROM users WHERE id = $1`, [id])
-    .then((result) => {      
+    .then((result) => {
       //If result is not found inside DB, return null
       if (result.rows.length === 0) {
-        return null
-      };
+        return null;
+      }
       //If result is found, return the object for the user (not the array holding the object)
-      return result.rows[0]
+      return result.rows[0];
     })
     //Console log error if can't connect to DB
     .catch((err) => {
-      console.log(err.message)
+      console.log(err.message);
     });
-}
+};
 
 exports.getUserWithId = getUserWithId;
 
@@ -76,21 +76,21 @@ const addUser =  function(user) {
   const values = [user.name, user.email, user.password];
   //Define query (RETURNIG * returns the query object after it's inserted, as opposed to just inserting it)
   const queryString = `
-    INSERT INTO users (name, email, password )
-    VALUES ($1, $2, $3)
-    RETURNING * 
-    `;
+  INSERT INTO users (name, email, password )
+  VALUES ($1, $2, $3)
+  RETURNING * 
+  `;
   //Return promise for query
   return pool
-  .query(queryString, values)
-  .then((result) => {
-    return result.rows
-  })
+    .query(queryString, values)
+    .then((result) => {
+      return result.rows;
+    })
   //Console log error if can't connect to DB
-  .catch((err) => {
-    console.log(err.message)
-  });
-}
+    .catch((err) => {
+      console.log(err.message);
+    });
+};
 
 exports.addUser = addUser;
 
@@ -104,29 +104,28 @@ exports.addUser = addUser;
 const getAllReservations = function(guest_id, limit = 10) {
   //Define query
   const queryString = `
-    SELECT * 
-    FROM reservations
-    JOIN properties ON property_id = properties.id
-    WHERE guest_id = $1
-    LIMIT $2
-    `;
+  SELECT * 
+  FROM reservations
+  JOIN properties ON property_id = properties.id
+  WHERE guest_id = $1
+  LIMIT $2
+  `;
   //Return promise for query
   return pool
     .query(queryString, [guest_id, limit])
-    .then((result) => {     
+    .then((result) => {
       //If result is not found inside DB, return null
       if (result.rows.length === 0) {
-        return null
-      };
+        return null;
+      }
       //If result is found, return results
-      console.log(result.rows)
-      return result.rows
+      return result.rows;
     })
     //Console log error if can't connect to DB
     .catch((err) => {
-      console.log(err.message)
+      console.log(err.message);
     });
-}
+};
 
 exports.getAllReservations = getAllReservations;
 
@@ -142,7 +141,7 @@ exports.getAllReservations = getAllReservations;
 
 
 
- const getAllProperties = (options, limit = 10) => {
+const getAllProperties = (options, limit = 10) => {
 
   // 1
   const queryParams = [];
@@ -167,7 +166,7 @@ exports.getAllReservations = getAllReservations;
   }
 
   if (options.maximum_price_per_night) {
-    const centsMaxPrice = 100 * options.maximum_price_per_night
+    const centsMaxPrice = 100 * options.maximum_price_per_night;
     queryParams.push(centsMaxPrice);
     queryString += ` AND cost_per_night <= $${queryParams.length}`;
   }
@@ -210,9 +209,55 @@ exports.getAllProperties = getAllProperties;
  * @return {Promise<{}>} A promise to the property.
  */
 const addProperty = function(property) {
-  const propertyId = Object.keys(properties).length + 1;
-  property.id = propertyId;
-  properties[propertyId] = property;
-  return Promise.resolve(property);
-}
+
+  //Define values
+  const values = [
+    property.owner_id,
+    property.title,
+    property.description,
+    property.thumbnail_photo_url,
+    property.cover_photo_url,
+    property.cost_per_night,
+    property.street,
+    property.city,
+    property.province,
+    property.post_code,
+    property.country,
+    property.parking_spaces,
+    property.number_of_bathrooms,
+    property.number_of_bedrooms
+  ];
+
+  //Define query (RETURNING * returns the query object after it's inserted, as opposed to just inserting it)
+  const queryString = `
+  INSERT INTO properties (
+  owner_id, 
+  title, 
+  description, 
+  thumbnail_photo_url, 
+  cover_photo_url,
+  cost_per_night,
+  street,
+  city,
+  province,
+  post_code,
+  country,
+  parking_spaces,
+  number_of_bathrooms,
+  number_of_bedrooms)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+  RETURNING * 
+  `;
+
+  //Return promise for query
+  return pool
+    .query(queryString, values)
+    .then((result) => {
+      return result.rows;
+    })
+  //Console log error if can't connect to DB
+    .catch((err) => {
+      console.log(err.message);
+    });
+};
 exports.addProperty = addProperty;
